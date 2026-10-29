@@ -23,4 +23,3 @@ def health() -> dict[str, str]:
 def get_item(item_id: int) -> Item:
     return Item(id=item_id, name=f"item-{item_id}")
 
-# import os
