@@ -1,0 +1,46 @@
+name: Deploy prod
+
+# Push to main only checks the release and says it is ready. The deploy itself is
+# started by a person: Actions → Deploy prod → Run workflow (branch main). Required
+# reviewers are not available in private repositories below GitHub Enterprise.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  statuses: read
+
+jobs:
+  check:
+    runs-on: [self-hosted, linux, ci]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: The release went through the test stand
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Prod is deployed from main only (got $GITHUB_REF)"
+            exit 1
+          fi
+          scripts/check_release.sh
+      - if: success() && github.event_name == 'push'
+        run: scripts/notify_telegram.sh test "🚀" "Релиз ${GITHUB_SHA::12} готов к деплою на прод. Actions → Deploy prod → Run workflow."
+      - if: failure()
+        run: scripts/notify_telegram.sh test "❌" "Релиз ${GITHUB_SHA::12} нельзя деплоить на прод, причина в логе проверки."
+
+  deploy:
+    needs: check
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, linux, prod-env]
+    steps:
+      - uses: actions/checkout@v7
+      - run: scripts/host/deploy.sh prod "$GITHUB_SHA"

@@ -1,0 +1,15 @@
+[Unit]
+Description=checkcc API
+After=network-online.target mysql.service redis-server.service
+
+[Service]
+@USER_LINE@
+WorkingDirectory=@APP_DIR@/current
+Environment=LAB_ENV_PATH=@APP_DIR@/.lab_env
+# One process, never --workers: background work lives inside it (as in LaboratoryIntegration).
+ExecStart=@APP_DIR@/current/.venv/bin/uvicorn app.main:app --host @APP_HOST@ --port @APP_PORT@
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=@WANTED_BY@

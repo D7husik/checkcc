@@ -1,0 +1,43 @@
+name: Ops
+
+# Buttons for the running environments: Actions → Ops → Run workflow.
+# Restoring a database stays a manual command on the machine, on purpose.
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: Environment
+        type: choice
+        options: [test, prod]
+        required: true
+      action:
+        description: What to do
+        type: choice
+        options: [status, backup, rollback]
+        required: true
+
+# The same groups as the deploy workflows: never at the same time as a deploy.
+concurrency:
+  group: deploy-${{ inputs.env }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    if: inputs.env != 'prod' || github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, "${{ inputs.env }}-env"]
+    steps:
+      - uses: actions/checkout@v7
+      - env:
+          ENV_NAME: ${{ inputs.env }}
+          ACTION: ${{ inputs.action }}
+        run: |
+          DIR=scripts
+          if [ "$ENV_NAME" = prod ]; then DIR=scripts/host; fi
+          case "$ACTION" in
+            status) scripts/status.sh "$ENV_NAME" ;;
+            backup) "$DIR/backup_db.sh" "$ENV_NAME" manual ;;
+            rollback) "$DIR/rollback.sh" "$ENV_NAME" ;;
+          esac
