@@ -47,7 +47,7 @@ git push -u origin demo-lint
 - в `~/checkcc-prod/backups/prod/` появился новый дамп.
 
 ### Шаг 5. Обойти стенд нельзя
-Закоммитить что-нибудь прямо в `main` и запустить Run workflow. Ожидаемо: ❌ `check` («is not a merge»), деплоя нет.
+На странице Deploy prod нажать Run workflow и выбрать ветку `test` вместо `main`. Ожидаемо: ❌ `check` («Prod is deployed from main only»), деплоя нет. Прямой push в `main` запрещён правилом защиты ветки.
 
 ### Шаг 6. Откат кнопкой
 **Actions → Ops → Run workflow**: `prod`, `rollback`. Ожидаемо: `current` указывает на предыдущий релиз, сервис отвечает. Если после отката схема новее кода, статус будет `degraded`.
