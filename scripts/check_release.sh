@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Only what went through the test stand may reach prod. Without rulesets (private repo on
-# the Free plan) this check is what enforces it:
+# Only what went through the test stand may reach prod. Branch protection depends on the
+# owner's plan, so the deploy enforces it by itself:
 #   - the commit on main is a merge, and its second parent is what test had;
 #   - main's code is exactly that commit's code;
 #   - deploy-test marked that commit as deployed.

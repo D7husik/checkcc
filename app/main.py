@@ -39,6 +39,7 @@ app.include_router(health_router)
 
 class ItemIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
+    note: str | None = Field(default=None, max_length=200)
 
 
 class ItemOut(BaseModel):
@@ -46,6 +47,7 @@ class ItemOut(BaseModel):
 
     id: int
     name: str
+    note: str | None
 
 
 @app.get("/")
@@ -55,7 +57,7 @@ def root() -> dict[str, str]:
 
 @app.post("/items", status_code=status.HTTP_201_CREATED)
 def create_item(item: ItemIn, db: Db) -> ItemOut:
-    row = Item(name=item.name)
+    row = Item(name=item.name, note=item.note)
     db.add(row)
     db.commit()
     return ItemOut.model_validate(row)
