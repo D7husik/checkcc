@@ -3,6 +3,12 @@ __pycache__/
 .venv/
 venv/
 .ruff_cache/
+.pytest_cache/
 .env
+.lab_env
+.deploy.env
+.my.cnf
+logs/
+backups/
 .idea/
 .vscode/

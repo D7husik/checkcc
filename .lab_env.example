@@ -1,0 +1,10 @@
+# Copy to .lab_env and fill in. Never commit the real file.
+# For Docker Compose the host in DATABASE_URL is `mysql`; on a machine without Docker it
+# is wherever MySQL listens (see deploy/prod.env).
+DATABASE_URL=mysql+pymysql://checkcc:change-me@mysql:3306/checkcc
+
+# Read by the mysql container (Docker Compose only).
+MYSQL_ROOT_PASSWORD=change-me-too
+MYSQL_DATABASE=checkcc
+MYSQL_USER=checkcc
+MYSQL_PASSWORD=change-me

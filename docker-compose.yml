@@ -1,0 +1,50 @@
+# Test stand and local development. Deploys set APP_IMAGE and run with --no-build.
+x-app: &app
+  image: ${APP_IMAGE:-checkcc-app:local}
+  build:
+    context: .
+  env_file:
+    - .lab_env
+
+services:
+  # Brings the schema to head and exits. Deploys run it explicitly with the new image.
+  migrate:
+    <<: *app
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    <<: *app
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      mysql:
+        condition: service_healthy
+    volumes:
+      - app_logs:/app/logs
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    env_file:
+      - .lab_env
+    ports:
+      - "127.0.0.1:${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      # Over TCP: during first-run initialisation mysqld listens on the socket only.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  app_logs:

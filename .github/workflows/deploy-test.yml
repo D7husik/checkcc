@@ -1,0 +1,45 @@
+name: deploy-test
+
+# Push to test → CI → deploy on the stand. On success the commit gets the status
+# deploy/test: that is what scripts/check_release.sh requires before prod.
+on:
+  push:
+    branches: [test]
+
+concurrency:
+  group: deploy-test
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    with:
+      build_image: false
+
+  deploy:
+    needs: ci
+    runs-on: [self-hosted, linux, test-env]
+    steps:
+      - uses: actions/checkout@v7
+      - run: scripts/deploy.sh test "$GITHUB_SHA"
+      - name: Mark the commit as deployed to the stand
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -fsS -o /dev/null -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d '{"state":"success","context":"deploy/test","description":"Deployed to the test stand"}'
+
+  # deploy.sh reports its own outcome; this covers failures before it ran.
+  notify-failure:
+    needs: [ci]
+    if: failure()
+    runs-on: [self-hosted, linux, test-env]
+    steps:
+      - uses: actions/checkout@v7
+      - run: scripts/notify_telegram.sh test "❌" "CI для ${GITHUB_SHA::12} упал, деплоя не было."
