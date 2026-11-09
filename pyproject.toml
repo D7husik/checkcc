@@ -1,3 +1,30 @@
+[project]
+name = "checkcc"
+version = "0.2.0"
+description = "Test bed for the CI/CD of LaboratoryIntegration"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162",
+    "uvicorn[standard]>=0.54",
+    "sqlalchemy>=2.1",
+    "pymysql>=1.2",
+    "cryptography>=50",
+    "alembic>=1.20",
+    "python-dotenv>=1.2",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17",
+    "pytest>=9",
+    "httpx>=0.28",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --tb=short"
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
@@ -5,3 +32,7 @@ target-version = "py312"
 [tool.ruff.lint]
 # E/F — базовые ошибки, I — порядок импортов, UP — современный синтаксис, B — частые баги
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+# The migrations folder is called alembic too; the import always means the library.
+known-third-party = ["alembic"]

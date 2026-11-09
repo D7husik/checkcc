@@ -1,0 +1,3 @@
+# /etc/sudoers.d/checkcc (visudo -f). Only for SERVICE_MANAGER=system: the deploy user may
+# start, stop and restart this one service, and nothing else.
+deployer ALL=(root) NOPASSWD: /usr/bin/systemctl start checkcc.service, /usr/bin/systemctl stop checkcc.service, /usr/bin/systemctl restart checkcc.service
