@@ -34,7 +34,7 @@ Actions → Deploy prod → Run workflow ─► деплой на прод
 
 | Job | Что делает |
 |---|---|
-| `source-branch` | PR в `main` принимается только из `test` |
+| `source-branch` | идёт первым: PR в `main` принимается только из `test`. Если PR не из `test`, остальные job'ы не запускаются |
 | `lint` | `ruff check`, `ruff format --check`, синтаксис shell-скриптов |
 | `tests` | `pytest` на настоящей MySQL 8 (service-контейнер на случайном порту) |
 | `migrations` | `scripts/ci_migrations.sh`: одна голова, upgrade на пустой БД, `alembic check`, откат всей истории и повторный upgrade |
