@@ -39,7 +39,11 @@ WorkingDirectory=$DIR
 ExecStart=$DIR/run.sh
 Restart=always
 RestartSec=5
-KillMode=process
+# Stop every process of the unit. With KillMode=process systemd kills only run.sh,
+# the Listener outlives it, and after a restart two Listeners share one registration:
+# "A session for this runner already exists", then jobs cancel each other.
+# (svc.sh uses KillMode=process safely: its runsvc.sh forwards the signal.)
+KillMode=control-group
 TimeoutStopSec=5min
 
 [Install]
